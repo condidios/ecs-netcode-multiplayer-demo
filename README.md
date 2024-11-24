@@ -56,13 +56,16 @@ BulletMovementSystem: Moves bullets forward based on direction and speed.
 BulletCollisionSystem: Detects and handles bullet collisions using Unity Physics.
 Example Code
 Bullet Component
+```csharp
 public struct Bullet : IComponentData
 {
     public float3 Direction;
     public float Speed;
     public float TimeLeft;
 }
+```
 Bullet Movement System
+```csharp
 [BurstCompile]
 [UpdateInGroup(typeof(SimulationSystemGroup))]
 public partial struct BulletMovementSystem : ISystem
@@ -85,6 +88,7 @@ public partial struct BulletMovementSystem : ISystem
         ecb.Dispose();
     }
 }
+```
 Future Improvements
 Add player health and respawn mechanics.
 Implement environmental obstacles.
