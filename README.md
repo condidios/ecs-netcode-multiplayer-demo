@@ -2,27 +2,27 @@
 This is a Unity project that implements a simple multiplayer First-Person Shooter (FPS) prototype using Unity's Entity Component System (ECS), NetCode, and Physics packages. The project showcases the basics of networked gameplay, including player movement, bullet firing, collision detection, and server-side validation.
 
 ## Features
-Multiplayer with Unity NetCode:
+### Multiplayer with Unity NetCode:
 
 Supports authoritative server-side simulation.
 RPCs (Remote Procedure Calls) are used for client-to-server communication.
-Entity Component System (ECS):
+### Entity Component System (ECS):
 
 Fully implemented in Unity ECS for high performance and scalability.
 Avoids using GameObjects, relying on entities and components instead.
-Bullet Firing Mechanic:
+### Bullet Firing Mechanic:
 
 Bullets are instantiated on the server, synced to all clients.
 Predictive simulation on the client side ensures smooth gameplay.
 Bullets have a TimeLeft property to self-destruct after a set duration.
-Collision Detection:
+### Collision Detection:
 
 Uses Unity Physics for detecting bullet collisions with players or the environment.
 Handles bullet destruction upon collision.
-Burst Optimization:
+### Burst Optimization:
 
 Systems are Burst-compiled for high-performance simulations.
-Cross-Platform:
+### Cross-Platform:
 
 Works on LAN and WAN setups.
 Scalable architecture to extend for more features.
