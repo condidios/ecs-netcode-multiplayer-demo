@@ -1,7 +1,7 @@
-Unity NetCode Multiplayer FPS Project
+# Unity NetCode Multiplayer FPS Project
 This is a Unity project that implements a simple multiplayer First-Person Shooter (FPS) prototype using Unity's Entity Component System (ECS), NetCode, and Physics packages. The project showcases the basics of networked gameplay, including player movement, bullet firing, collision detection, and server-side validation.
 
-Features
+##Features
 Multiplayer with Unity NetCode:
 
 Supports authoritative server-side simulation.
@@ -26,14 +26,14 @@ Cross-Platform:
 
 Works on LAN and WAN setups.
 Scalable architecture to extend for more features.
-Technologies Used
-Unity ECS: For high-performance entity-based architecture.
-Unity NetCode: For implementing multiplayer networking.
-Unity Physics: For collision detection and trigger events.
-Unity Burst Compiler: For optimizing system performance.
-Unity Transform System: For updating entity transformations (position, rotation, scale).
-C# Jobs System: For multithreading simulation tasks.
-How It Works
+## Built With
+- [Unity](https://unity.com/) - Game engine
+- [Unity NetCode](https://docs.unity3d.com/Packages/com.unity.netcode@1.0/manual/index.html) - Multiplayer framework
+- [ECS](https://docs.unity3d.com/Packages/com.unity.entities@1.0/manual/index.html) - Entity Component System for optimized performance
+- [Burst](https://docs.unity3d.com/Packages/com.unity.burst@1.8/manual/index.html) - High-performance compiler for Unity
+- [Jobs System](https://docs.unity3d.com/Manual/JobSystem.html) - Multithreaded job scheduling
+
+## How It Works
 Core Components
 Player Movement:
 
@@ -50,7 +50,7 @@ Uses ITriggerEventsJob for efficient event handling.
 Bullet Destruction:
 
 Bullets are destroyed when they hit something or after TimeLeft expires.
-Key Systems
+## Key Systems
 FireBulletRpcSystem: Handles incoming RPC requests to fire bullets.
 BulletMovementSystem: Moves bullets forward based on direction and speed.
 BulletCollisionSystem: Detects and handles bullet collisions using Unity Physics.
@@ -89,14 +89,14 @@ public partial struct BulletMovementSystem : ISystem
     }
 }
 ```
-Future Improvements
+## Future Improvements
 Add player health and respawn mechanics.
 Implement environmental obstacles.
 Add advanced collision layers for different entity types.
 Improve client-side prediction for smoother gameplay.
-License
+## License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-Acknowledgments
+## Acknowledgments
 Thanks to the Unity ECS and NetCode teams for the great tools!
 Inspired by other multiplayer FPS projects and the ECS community.
