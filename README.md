@@ -94,8 +94,6 @@ Add player health and respawn mechanics.
 Implement environmental obstacles.
 Add advanced collision layers for different entity types.
 Improve client-side prediction for smoother gameplay.
-## License
-This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Acknowledgments
 Thanks to the Unity ECS and NetCode teams for the great tools!
