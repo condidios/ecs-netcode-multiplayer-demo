@@ -1,7 +1,7 @@
 # Unity NetCode Multiplayer FPS Project
 This is a Unity project that implements a simple multiplayer First-Person Shooter (FPS) prototype using Unity's Entity Component System (ECS), NetCode, and Physics packages. The project showcases the basics of networked gameplay, including player movement, bullet firing, collision detection, and server-side validation.
 
-##Features
+## Features
 Multiplayer with Unity NetCode:
 
 Supports authoritative server-side simulation.
