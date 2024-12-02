@@ -1,42 +1,58 @@
-/*using Network.Components;
+using Network.Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
+using Unity.Transforms;
 
-namespace Network.Systems
+[BurstCompile]
+[UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+public partial struct PredictedClientBulletFiringSystem : ISystem
 {
-    [UpdateInGroup(typeof(GhostInputSystemGroup))]
-    [BurstCompile]
-    public partial struct ClientFireInputSystem : ISystem
+    public void OnCreate(ref SystemState state)
     {
-        public void OnCreate(ref SystemState state)
-        {
-            state.RequireForUpdate<NetworkStreamConnection>();
-        }
+        state.RequireForUpdate<NetworkStreamConnection>();
+    }
 
-        public void OnUpdate(ref SystemState state)
-        {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+    public void OnUpdate(ref SystemState state)
+    {
+        var currentTime = SystemAPI.Time.ElapsedTime;
 
-            foreach (var input in SystemAPI.Query<RefRO<CubeInput>>().WithAll<GhostOwnerIsLocal>())
+        var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
+
+        var bulletPrefabSingleton = SystemAPI.GetSingleton<BulletPrefabSingleton>();
+        var bulletPrefab = bulletPrefabSingleton.BulletPrefab;
+        foreach (var (input, transform) in
+                 SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>()
+                     .WithAll<GhostOwnerIsLocal>())
+        {
+            if (input.ValueRO.IsFiring)
             {
-                if (input.ValueRO.IsFiring)
+                // Calculate fire rate and spawn bullets locally
+                var fireInterval = 1f / input.ValueRO.FireRate;
+                if (currentTime - input.ValueRO.LastFireTime >= fireInterval)
                 {
-                    var fireRequest = ecb.CreateEntity();
-                    ecb.AddComponent(fireRequest, new BulletFiringRequest
+                    input.ValueRW.LastFireTime = (float)currentTime;
+                    var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
+                    var bullet = new Bullet
                     {
-                        MouseDeltaX = input.ValueRO.MouseDeltaX,
-                        MouseDeltaY = input.ValueRO.MouseDeltaY
-                    });
-                    ecb.AddComponent(fireRequest, new SendRpcCommandRequest
+                        Direction = math.forward((transform.ValueRO.Rotation)),
+                        Speed = 20f,
+                        TimeLeft = 3f,
+                        Owner = SystemAPI.GetSingletonEntity<NetworkStreamConnection>()
+                    };
+                    commandBuffer.SetComponent(bulletEntity, bullet);
+                    commandBuffer.SetComponent(bulletEntity, new LocalTransform
                     {
-                        TargetConnection = SystemAPI.GetSingletonEntity<NetworkStreamConnection>()
+                        Position = transform.ValueRO.Position,
+                        Rotation = transform.ValueRO.Rotation,
+                        Scale = 0.1f
                     });
+
                 }
             }
-
-            ecb.Playback(state.EntityManager);
         }
     }
-}*/
+}

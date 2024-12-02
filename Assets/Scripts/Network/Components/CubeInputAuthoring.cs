@@ -13,6 +13,8 @@ namespace Network.Components
         public float MouseDeltaX; 
         public float MouseDeltaY;
         public bool IsFiring;
+        public float FireRate;
+        public float LastFireTime; 
     }
 
     [DisallowMultipleComponent]
@@ -45,8 +47,10 @@ namespace Network.Components
 
             float mouseX = Input.GetAxis("Mouse X");
             float mouseY = Input.GetAxis("Mouse Y");
+            float fireRate = 5f;
 
-            bool isFiring = Input.GetMouseButtonDown(0);
+            bool isFiring = Input.GetMouseButton(0);
+            Debug.Log(isFiring);
 
             using (var ecb = new EntityCommandBuffer(Allocator.Temp))
             {
@@ -58,22 +62,12 @@ namespace Network.Components
                     if (down) playerInput.ValueRW.Vertical -= 1;
                     if (up) playerInput.ValueRW.Vertical += 1;
 
+                    playerInput.ValueRW.FireRate = fireRate;
                     playerInput.ValueRW.MouseDeltaX = -mouseX;
                     playerInput.ValueRW.MouseDeltaY = -mouseY;
                     playerInput.ValueRW.IsFiring = isFiring;
-
-                    if (isFiring)
-                    {
-                        var rpc = new FireBulletRpc
-                        {
-                            Position = transform.ValueRO.Position,
-                            Rotation = transform.ValueRO.Rotation
-                        };
-
-                        var rpcEntity = ecb.CreateEntity();
-                        ecb.AddComponent(rpcEntity, rpc);
-                        ecb.AddComponent<SendRpcCommandRequest>(rpcEntity);
-                    }
+                    
+                    
                 }
                 ecb.Playback(state.EntityManager);
             }

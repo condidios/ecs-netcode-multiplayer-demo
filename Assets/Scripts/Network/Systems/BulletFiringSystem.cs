@@ -1,4 +1,4 @@
-using Unity.Burst;
+/*using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -53,4 +53,4 @@ namespace Network.Systems
             commandBuffer.Dispose();
         }
     }
-}
+}*/

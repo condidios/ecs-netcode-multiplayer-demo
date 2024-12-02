@@ -1,65 +1,59 @@
-/*using Unity.Entities;
-using Unity.NetCode;
+using Network.Components;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Transforms;
 
 [BurstCompile]
 [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-public partial struct ServerBulletFiringSystem : ISystem
+public partial struct ServerBulletSpawnSystem : ISystem
 {
-    private ComponentLookup<LocalTransform> transformLookup;
-
     public void OnCreate(ref SystemState state)
     {
         state.RequireForUpdate<BulletPrefabSingleton>();
-        transformLookup = state.GetComponentLookup<LocalTransform>(true);
+        state.RequireForUpdate<NetworkStreamConnection>();
     }
 
     public void OnUpdate(ref SystemState state)
     {
-        var bulletPrefab = SystemAPI.GetSingleton<BulletPrefabSingleton>().BulletPrefab;
-        var ecb = new EntityCommandBuffer(Allocator.Temp);
+        var currentTime = SystemAPI.Time.ElapsedTime;
 
-        transformLookup.Update(ref state);
+        var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
 
-        foreach (var (request, reqSrc) in SystemAPI.Query<RefRO<BulletFiringRequest>, RefRO<ReceiveRpcCommandRequest>>())
+        var bulletPrefabSingleton = SystemAPI.GetSingleton<BulletPrefabSingleton>();
+        var bulletPrefab = bulletPrefabSingleton.BulletPrefab;
+        
+        foreach (var (input, transform, entity) in
+                 SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>()
+                     .WithAll<GhostOwner>().WithEntityAccess())
         {
-            // Ensure we have the position of the cube associated with this client connection
-            if (transformLookup.HasComponent(reqSrc.ValueRO.SourceConnection))
+            if (input.ValueRO.IsFiring)
             {
-                float3 cubePosition = transformLookup[reqSrc.ValueRO.SourceConnection].Position;
-
-                // Instantiate the bullet at the cube's position
-                var bullet = ecb.Instantiate(bulletPrefab);
-
-                // Calculate aim direction from the request's MouseDeltaX and MouseDeltaY
-                float3 aimDirection = math.normalize(new float3(request.ValueRO.MouseDeltaX, request.ValueRO.MouseDeltaY, 1f));
-
-                // Set the bullet's LocalTransform with initial position and orientation
-                ecb.SetComponent(bullet, new LocalTransform
+                var fireInterval = 1f / input.ValueRO.FireRate;
+                if (currentTime - input.ValueRO.LastFireTime >= fireInterval)
                 {
-                    Position = cubePosition,
-                    Rotation = quaternion.LookRotationSafe(aimDirection, math.up()),  // Orienting the bullet in the aim direction
-                    Scale = 0.1f
-                });
+                    input.ValueRW.LastFireTime = (float)currentTime;
 
-                // Set the bullet's movement parameters like speed and direction
-                ecb.SetComponent(bullet, new Bullet
-                {
-                    Direction = aimDirection,
-                    Speed = 20f,
-                    TimeLeft = 3f
-                });
-
-                UnityEngine.Debug.Log($"Bullet instantiated at position: {cubePosition} with direction: {aimDirection}");
+                    // Create the bullet entity
+                    var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
+                    var bullet = new Bullet
+                    {
+                        Direction = math.forward((transform.ValueRO.Rotation)),
+                        Speed = 20f,
+                        TimeLeft = 3f,
+                        Owner = entity
+                    };
+                    commandBuffer.SetComponent(bulletEntity, bullet);
+                    commandBuffer.SetComponent(bulletEntity, new LocalTransform
+                    {
+                        Position = transform.ValueRO.Position,
+                        Rotation = transform.ValueRO.Rotation,
+                        Scale = 0.1f
+                    });
+                }
             }
-
-            // Destroy the request entity after processing
-            //ecb.DestroyEntity(request.Entity);
         }
-
-        ecb.Playback(state.EntityManager);
     }
-}*/
+}
