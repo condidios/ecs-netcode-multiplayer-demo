@@ -1,3 +1,4 @@
+using Network.Components;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -21,6 +22,7 @@ public class CubeAuthoring : MonoBehaviour
             {
                 CurrentHealth = 100
             });
+            AddComponent<PlayerTagComponent>();
             AddComponent<Cube>(entity);
             
         }

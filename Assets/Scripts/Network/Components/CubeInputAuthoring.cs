@@ -13,11 +13,13 @@ namespace Network.Components
         public float MouseDeltaX; 
         public float MouseDeltaY;
         public bool IsFiring;
+        
         public float FireRate;
         public double LastFireTime; 
         
         public InputEvent JumpEvent;
     }
+   
 
     [DisallowMultipleComponent]
     public class CubeInputAuthoring : MonoBehaviour
@@ -54,6 +56,7 @@ namespace Network.Components
 
             bool isFiring = Input.GetMouseButton(0);
             Debug.Log(isFiring);
+            
 
             using (var ecb = new EntityCommandBuffer(Allocator.Temp))
             {

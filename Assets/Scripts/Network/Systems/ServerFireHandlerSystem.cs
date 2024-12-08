@@ -1,4 +1,4 @@
-using Network.Components;
+/*using Network.Components;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -65,4 +65,4 @@ public partial struct ServerBulletSpawnSystem : ISystem
         commandBuffer.Playback(state.EntityManager);
         commandBuffer.Dispose();
     }
-}
+}*/

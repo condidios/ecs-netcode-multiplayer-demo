@@ -8,8 +8,7 @@ public struct Bullet : IComponentData
 {
     public float3 Direction;   // Direction of the bullet's movement
     public float Speed;        // Speed of the bullet
-    public float TimeLeft;
-    public Entity Owner; // Time before the bullet is destroyed
+    public float TimeLeft; // Time before the bullet is destroyed
 }
 public struct BulletSpawned : IComponentData
 {

@@ -8,7 +8,7 @@ namespace Network.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct JumpSystem : ISystem
     {
-        private const float JumpSpeed = 25f;
+        private const float JumpSpeed = 20f;
         private const float GroundLevel = 0f;
 
         public void OnUpdate(ref SystemState state)
@@ -27,7 +27,7 @@ namespace Network.Systems
                 // Simulate landing back on the ground
                 if (position.y > GroundLevel)
                 {
-                    position.y -= 5f * SystemAPI.Time.DeltaTime; // Simulate gravity
+                    position.y -= 10f * SystemAPI.Time.DeltaTime; // Simulate gravity
                     if (position.y < GroundLevel)
                     {
                         position.y = GroundLevel; // Clamp to ground

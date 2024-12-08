@@ -9,7 +9,7 @@ using UnityEngine;
 
 [BurstCompile]
 [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+//[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 public partial struct PredictedClientBulletFiringSystem : ISystem
 {
     public void OnCreate(ref SystemState state)
@@ -25,41 +25,41 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
 
         var bulletPrefabSingleton = SystemAPI.GetSingleton<BulletPrefabSingleton>();
         var bulletPrefab = bulletPrefabSingleton.BulletPrefab;
-        foreach (var (input, transform) in
-                 SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>()
-                     .WithAll<GhostOwnerIsLocal>())
+        foreach (var (input, transform, ghostOwner) in
+                 SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>, RefRW<GhostOwner>>()
+                     .WithAll<Simulate>())
         {
-            if (input.ValueRO.IsFiring)
+            if (!input.ValueRO.IsFiring) 
+                continue;
+            
+            var elapsedTime = SystemAPI.Time.ElapsedTime;
+            var timeSinceLastShot = elapsedTime - input.ValueRO.LastFireTime;
+            var fireInterval = 1f / input.ValueRO.FireRate;
+
+            if (timeSinceLastShot >= fireInterval)
             {
-                var elapsedTime = SystemAPI.Time.ElapsedTime;
-                var timeSinceLastShot = elapsedTime - input.ValueRO.LastFireTime;
-                var fireInterval = 1f / input.ValueRO.FireRate;
-
-                if (timeSinceLastShot >= fireInterval)
-                {
                     
-                    input.ValueRW.LastFireTime = elapsedTime;
-                    Debug.Log($"Elapsed Time: {elapsedTime}, LastFireTime: {input.ValueRO.LastFireTime}, TimeSinceLastShot: {timeSinceLastShot}, FireInterval: {fireInterval}");
+                input.ValueRW.LastFireTime = elapsedTime;
+                Debug.Log($"Elapsed Time: {elapsedTime}, LastFireTime: {input.ValueRO.LastFireTime}, TimeSinceLastShot: {timeSinceLastShot}, FireInterval: {fireInterval}");
 
-                    var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
-                    var bullet = new Bullet
-                    {
-                        Direction = math.forward((transform.ValueRO.Rotation)),
-                        Speed = 20f,
-                        TimeLeft = 3f,
-                        Owner = SystemAPI.GetSingletonEntity<NetworkStreamConnection>()
-                    };
-                    commandBuffer.SetComponent(bulletEntity, bullet);
-                    float spawnOffset = 0.5f; // Adjust this value to control the spawn distance
-                    var initialPosition = transform.ValueRO.Position + math.forward(transform.ValueRO.Rotation) * spawnOffset;
-                    commandBuffer.SetComponent(bulletEntity, new LocalTransform
-                    {
-                        Position = initialPosition,
-                        Rotation = transform.ValueRO.Rotation,
-                        Scale = 0.1f
-                    });
+                var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
+                var bullet = new Bullet
+                {
+                    Direction = math.forward((transform.ValueRO.Rotation)),
+                    Speed = 20f,
+                    TimeLeft = 3f,
+                };
+                commandBuffer.SetComponent(bulletEntity, ghostOwner.ValueRO);
+                commandBuffer.SetComponent(bulletEntity, bullet);
+                float spawnOffset = 0.5f; // Adjust this value to control the spawn distance
+                var initialPosition = transform.ValueRO.Position + math.forward(transform.ValueRO.Rotation) * spawnOffset;
+                commandBuffer.SetComponent(bulletEntity, new LocalTransform
+                {
+                    Position = initialPosition,
+                    Rotation = transform.ValueRO.Rotation,
+                    Scale = 0.1f
+                });
 
-                }
             }
         }
         commandBuffer.Playback(state.EntityManager);
