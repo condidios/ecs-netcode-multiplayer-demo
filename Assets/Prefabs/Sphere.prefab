@@ -131,12 +131,12 @@ MonoBehaviour:
   OptimizationMode: 1
   Importance: 2
   prefabId: 337a91d034c274540a1545ffbee304b7
-  HasOwner: 0
+  HasOwner: 1
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
   GhostGroup: 0
   UsePreSerialization: 0
-  RollbackPredictedSpawnedGhostState: 0
+  RollbackPredictedSpawnedGhostState: 1
   RollbackPredictionOnStructuralChanges: 1
 --- !u!114 &1628892551438890119
 MonoBehaviour:

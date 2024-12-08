@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine;
 
 [BurstCompile]
 [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
@@ -30,11 +31,16 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
         {
             if (input.ValueRO.IsFiring)
             {
-                // Calculate fire rate and spawn bullets locally
+                var elapsedTime = SystemAPI.Time.ElapsedTime;
+                var timeSinceLastShot = elapsedTime - input.ValueRO.LastFireTime;
                 var fireInterval = 1f / input.ValueRO.FireRate;
-                if (currentTime - input.ValueRO.LastFireTime >= fireInterval)
+
+                if (timeSinceLastShot >= fireInterval)
                 {
-                    input.ValueRW.LastFireTime = (float)currentTime;
+                    
+                    input.ValueRW.LastFireTime = elapsedTime;
+                    Debug.Log($"Elapsed Time: {elapsedTime}, LastFireTime: {input.ValueRO.LastFireTime}, TimeSinceLastShot: {timeSinceLastShot}, FireInterval: {fireInterval}");
+
                     var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
                     var bullet = new Bullet
                     {
@@ -44,9 +50,11 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
                         Owner = SystemAPI.GetSingletonEntity<NetworkStreamConnection>()
                     };
                     commandBuffer.SetComponent(bulletEntity, bullet);
+                    float spawnOffset = 0.5f; // Adjust this value to control the spawn distance
+                    var initialPosition = transform.ValueRO.Position + math.forward(transform.ValueRO.Rotation) * spawnOffset;
                     commandBuffer.SetComponent(bulletEntity, new LocalTransform
                     {
-                        Position = transform.ValueRO.Position,
+                        Position = initialPosition,
                         Rotation = transform.ValueRO.Rotation,
                         Scale = 0.1f
                     });
@@ -54,5 +62,7 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
                 }
             }
         }
+        commandBuffer.Playback(state.EntityManager);
+        commandBuffer.Dispose();
     }
 }

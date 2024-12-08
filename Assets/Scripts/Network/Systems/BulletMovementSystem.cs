@@ -1,10 +1,11 @@
 using Unity.Burst;
 using Unity.Entities;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 
 [BurstCompile]
-[UpdateInGroup(typeof(SimulationSystemGroup))]
+[UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
 public partial struct BulletMovementSystem : ISystem
 {
     public void OnUpdate(ref SystemState state)
@@ -25,7 +26,7 @@ public partial struct BulletMovementSystem : ISystem
             // Destroy bullet if time left is zero or less
             if (bullet.ValueRW.TimeLeft <= 0f)
             {
-                ecb.DestroyEntity(entity);
+                ecb.AddComponent<DestroyFlag>(entity);
             }
         }
 

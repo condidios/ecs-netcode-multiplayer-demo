@@ -15,3 +15,4 @@ public struct BulletSpawned : IComponentData
 {
     // Marker to indicate that a bullet has been spawned
 }
+public struct DestroyFlag : IComponentData {}

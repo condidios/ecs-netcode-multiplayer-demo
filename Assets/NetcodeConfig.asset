@@ -21,13 +21,13 @@ MonoBehaviour:
     MaxSimulationStepsPerFrame: 1
     MaxSimulationStepBatchSize: 4
     TargetFrameRateMode: 0
-    m_SendSnapshotsForCatchUpTicks: 0
+    m_SendSnapshotsForCatchUpTicks: 1
     HandshakeApprovalTimeoutMS: 1134
   ClientTickRate:
-    InterpolationTimeNetTicks: 2
+    InterpolationTimeNetTicks: 1
     InterpolationTimeMS: 0
     MaxExtrapolationTimeSimTicks: 20
-    MaxPredictAheadTimeMS: 500
+    MaxPredictAheadTimeMS: 200
     TargetCommandSlack: 2
     NumAdditionalCommandsToSend: 2
     MaxPredictionStepBatchSizeRepeatedTick: 0
@@ -41,7 +41,7 @@ MonoBehaviour:
     PredictionTimeScaleMin: 0.9
     PredictionTimeScaleMax: 1.1
   GhostSendSystemData:
-    DefaultSnapshotPacketSize: 0
+    DefaultSnapshotPacketSize: 1024
     MinSendImportance: 0
     MinDistanceScaledSendImportance: 0
     MaxSendChunks: 0

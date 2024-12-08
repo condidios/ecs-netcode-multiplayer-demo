@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine;
 
 [BurstCompile]
 [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
@@ -31,10 +32,14 @@ public partial struct ServerBulletSpawnSystem : ISystem
         {
             if (input.ValueRO.IsFiring)
             {
+                var elapsedTime = SystemAPI.Time.ElapsedTime;
+                var timeSinceLastShot = elapsedTime - input.ValueRO.LastFireTime;
                 var fireInterval = 1f / input.ValueRO.FireRate;
-                if (currentTime - input.ValueRO.LastFireTime >= fireInterval)
+
+                if (timeSinceLastShot >= fireInterval)
                 {
-                    input.ValueRW.LastFireTime = (float)currentTime;
+                    
+                    input.ValueRW.LastFireTime = elapsedTime;
 
                     // Create the bullet entity
                     var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
@@ -46,14 +51,18 @@ public partial struct ServerBulletSpawnSystem : ISystem
                         Owner = entity
                     };
                     commandBuffer.SetComponent(bulletEntity, bullet);
+                    float spawnOffset = 0.5f; // Adjust this value to control the spawn distance
+                    var initialPosition = transform.ValueRO.Position + math.forward(transform.ValueRO.Rotation) * spawnOffset;
                     commandBuffer.SetComponent(bulletEntity, new LocalTransform
                     {
-                        Position = transform.ValueRO.Position,
+                        Position = initialPosition,
                         Rotation = transform.ValueRO.Rotation,
                         Scale = 0.1f
                     });
                 }
             }
         }
+        commandBuffer.Playback(state.EntityManager);
+        commandBuffer.Dispose();
     }
 }

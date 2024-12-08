@@ -179,7 +179,7 @@ MonoBehaviour:
   m_Capsule:
     Height: 0.5
     Radius: 0.25
-    Axis: 2
+    Axis: 1
   m_Cylinder:
     Height: 0.5
     Radius: 0.25
