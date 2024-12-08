@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c79d771cedb4794bf100ce60df5f764, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultGhostMode: 1
+  DefaultGhostMode: 2
   SupportedGhostModes: 3
   OptimizationMode: 1
   Importance: 2

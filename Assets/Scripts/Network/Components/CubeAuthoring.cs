@@ -22,7 +22,8 @@ public class CubeAuthoring : MonoBehaviour
             {
                 CurrentHealth = 100
             });
-            AddComponent<PlayerTagComponent>();
+            AddComponent<PlayerTagComponent>(entity);
+            AddComponent<PlayerFireTimer>(entity);
             AddComponent<Cube>(entity);
             
         }

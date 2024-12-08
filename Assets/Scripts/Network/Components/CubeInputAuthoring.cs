@@ -12,10 +12,9 @@ namespace Network.Components
         public int Vertical;
         public float MouseDeltaX; 
         public float MouseDeltaY;
-        public bool IsFiring;
+        public InputEvent IsFiring;
         
         public float FireRate;
-        public double LastFireTime; 
         
         public InputEvent JumpEvent;
     }
@@ -52,7 +51,7 @@ namespace Network.Components
 
             float mouseX = Input.GetAxis("Mouse X");
             float mouseY = Input.GetAxis("Mouse Y");
-            float fireRate = 3f;
+            float fireRate = 5f;
 
             bool isFiring = Input.GetMouseButton(0);
             Debug.Log(isFiring);
@@ -62,11 +61,9 @@ namespace Network.Components
             {
                 foreach (var (playerInput, transform, entity) in SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>().WithAll<GhostOwnerIsLocal>().WithEntityAccess())
                 {
-                    var currentInput = playerInput.ValueRO;
+                    var currentInput = default(CubeInput);
 
                     // Update movement and firing inputs
-                    currentInput.Horizontal = 0;
-                    currentInput.Vertical = 0;
                     if (left) currentInput.Horizontal -= 1;
                     if (right) currentInput.Horizontal += 1;
                     if (down) currentInput.Vertical -= 1;
@@ -75,11 +72,15 @@ namespace Network.Components
                     currentInput.FireRate = fireRate;
                     currentInput.MouseDeltaX = -mouseX;
                     currentInput.MouseDeltaY = -mouseY;
-                    currentInput.IsFiring = isFiring;
                     
                     if (jumpPressed)
                     {
                         currentInput.JumpEvent.Set(); // Set jump event to true
+                    }
+
+                    if (isFiring)
+                    {
+                        currentInput.IsFiring.Set();
                     }
 
                     // Write the updated input back

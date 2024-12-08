@@ -14,7 +14,7 @@ namespace Network.Systems
             var camera = Camera.main;
 
             // Ensure camera is following the local player's cube
-            foreach (var (trans, owner,playerTagComponent) in SystemAPI.Query<RefRO<LocalTransform>, RefRO<GhostOwnerIsLocal>,RefRO<PlayerTagComponent>>())
+            foreach (var trans in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<GhostOwnerIsLocal,PlayerTagComponent>())
             {
                 var cubePos = trans.ValueRO.Position;
                 camera.transform.position = cubePos + new float3(0, 1.5f, 0); // Adjust height as needed
