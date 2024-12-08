@@ -46,7 +46,7 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
             };
             commandBuffer.SetComponent(bulletEntity, ghostOwner.ValueRO);
             commandBuffer.SetComponent(bulletEntity, bullet);
-            float spawnOffset = 0.5f; // Adjust this value to control the spawn distance
+            float spawnOffset = 1f; // Adjust this value to control the spawn distance
             var initialPosition = transform.ValueRO.Position + math.forward(transform.ValueRO.Rotation) * spawnOffset;
             commandBuffer.SetComponent(bulletEntity, new LocalTransform
             {

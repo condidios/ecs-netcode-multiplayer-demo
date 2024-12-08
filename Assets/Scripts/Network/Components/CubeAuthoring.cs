@@ -24,6 +24,7 @@ public class CubeAuthoring : MonoBehaviour
             });
             AddComponent<PlayerTagComponent>(entity);
             AddComponent<PlayerFireTimer>(entity);
+            AddComponent<JumpVelocity>(entity);
             AddComponent<Cube>(entity);
             
         }

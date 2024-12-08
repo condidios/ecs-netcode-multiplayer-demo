@@ -1,43 +1,52 @@
-﻿using Network.Components;
+﻿/*using Network.Components;
 using Unity.Entities;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 
 namespace Network.Systems
 {
-    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
+    [UpdateInGroup(typeof(PredictedFixedStepSimulationSystemGroup))]
     public partial struct JumpSystem : ISystem
     {
-        private const float JumpSpeed = 20f;
         private const float GroundLevel = 0f;
+        private const float Gravity = -9.81f; // Gravity acceleration (m/s²)
+        private const float JumpImpulse = 10f; // Initial jump velocity (m/s)
 
         public void OnUpdate(ref SystemState state)
         {
-            foreach (var (input, transform) in SystemAPI.Query<RefRO<CubeInput>, RefRW<LocalTransform>>())
+            foreach (var (input, transform, velocity) in SystemAPI.Query<RefRO<CubeInput>, RefRW<LocalTransform>, RefRW<JumpVelocity>>()
+                         .WithAll<Simulate>())
             {
                 var cubeInput = input.ValueRO;
                 var position = transform.ValueRW.Position;
+                var jumpVelocity = velocity.ValueRW;
 
-                // Check if the JumpEvent was triggered
-                if (cubeInput.JumpEvent.IsSet)
+                // Apply jump impulse if JumpEvent is triggered and the entity is on the ground
+                if (cubeInput.JumpEvent.IsSet && Mathf.Abs(position.y - GroundLevel) < 0.01f)
                 {
-                    position.y += JumpSpeed * SystemAPI.Time.DeltaTime; // Apply jump impulse
+                    jumpVelocity.velocity = JumpImpulse; // Set upward velocity
                 }
 
-                // Simulate landing back on the ground
-                if (position.y > GroundLevel)
-                {
-                    position.y -= 10f * SystemAPI.Time.DeltaTime; // Simulate gravity
-                    if (position.y < GroundLevel)
-                    {
-                        position.y = GroundLevel; // Clamp to ground
-                    }
-                }
+                // Apply gravity
+                jumpVelocity.velocity += Gravity * SystemAPI.Time.fixedDeltaTime;
 
-                // Write updated position back
+                // Update position based on velocity
+                position.y += jumpVelocity.velocity * SystemAPI.Time.fixedDeltaTime;
+
+                // Clamp position to the ground and reset velocity if landed
+                if (position.y < GroundLevel)
+                {
+                    position.y = GroundLevel;
+                    jumpVelocity.velocity = 0f; // Reset velocity
+                }
+                Debug.Log("Velocity :"+jumpVelocity.velocity);
+                Debug.Log("Position"+position.y);
+
+                // Write updated position and velocity back
                 transform.ValueRW.Position = position;
+                velocity.ValueRW = jumpVelocity;
             }
         }
     }
-
-}
+}*/
