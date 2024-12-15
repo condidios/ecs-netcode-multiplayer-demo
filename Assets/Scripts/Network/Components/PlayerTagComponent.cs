@@ -4,6 +4,6 @@ namespace Network.Components
 {
     public struct PlayerTagComponent : IComponentData
     {
-        
+        public int ShootingMode;
     }
 }

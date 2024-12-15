@@ -21,7 +21,6 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
 
     public void OnUpdate(ref SystemState state)
     {
-        var currentTime = SystemAPI.Time.ElapsedTime;
 
         var commandBuffer = new EntityCommandBuffer(Allocator.Temp);
         var bulletPrefabSingleton = SystemAPI.GetSingleton<BulletPrefabSingleton>();
@@ -32,8 +31,8 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
 
         Camera mainCamera = Camera.main;
 
-        foreach (var (input, transform, ghostOwner, fireTimer) in
-                 SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>, RefRW<GhostOwner>, RefRW<PlayerFireTimer>>()
+        foreach (var (input, transform, ghostOwner, fireTimer,playerTag) in
+                 SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>, RefRW<GhostOwner>, RefRW<PlayerFireTimer>,RefRO<PlayerTagComponent>>()
                      .WithAll<Simulate>())
         {
             if (fireTimer.ValueRW.FireTimer > 0)
@@ -46,7 +45,7 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
                 continue;
 
             fireTimer.ValueRW.FireTimer = 1 / input.ValueRO.FireRate;
-
+            
             // Get aim direction
             float3 aimDirection = math.forward(transform.ValueRO.Rotation); // Default forward
             if (mainCamera != null)
@@ -54,8 +53,7 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
                 aimDirection = math.normalize(ray.direction);
             }
-
-            if (input.ValueRO.ShootingMode == 1) // Standard bullet firing
+            if (playerTag.ValueRO.ShootingMode == 1) // Standard bullet firing
             {
                 Debug.Log("ShootingMode1");
                 var bulletEntity = commandBuffer.Instantiate(bulletPrefab);
@@ -77,10 +75,10 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
                     Scale = 0.1f
                 });
             }
-            else if (input.ValueRO.ShootingMode == 2) // Raycast-based shooting
+            else if (playerTag.ValueRO.ShootingMode == 2) // Raycast-based shooting
             {
                 Debug.Log("RaycastAtış");
-                float3 rayOrigin = transform.ValueRO.Position;
+                float3 rayOrigin = transform.ValueRO.Position + aimDirection * 1f;
                 RaycastInput raycastInput = new RaycastInput
                 {
                     Start = rayOrigin,
@@ -92,20 +90,26 @@ public partial struct PredictedClientBulletFiringSystem : ISystem
                         GroupIndex = 0
                     }
                 };
-
-                if (physicsWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit hit))
+                if (state.World.IsServer())
                 {
-                    Entity hitEntity = physicsWorld.Bodies[hit.RigidBodyIndex].Entity;
-
-                    if (entityManager.HasComponent<PlayerHealth>(hitEntity))
+                    if (physicsWorld.CastRay(raycastInput, out Unity.Physics.RaycastHit hit))
                     {
-                        var health = entityManager.GetComponentData<PlayerHealth>(hitEntity);
-                        health.CurrentHealth -= 10; // Example damage
-                        entityManager.SetComponentData(hitEntity, health);
+                        Entity hitEntity = physicsWorld.Bodies[hit.RigidBodyIndex].Entity;
 
-                        Debug.Log($"Hit entity {hitEntity} - New Health: {health.CurrentHealth}");
+                        if (entityManager.HasComponent<PlayerHealth>(hitEntity))
+                        {
+                            var health = entityManager.GetComponentData<PlayerHealth>(hitEntity);
+                            health.CurrentHealth -= 10; // Example damage
+                            entityManager.SetComponentData(hitEntity, health);
+
+                            if (health.CurrentHealth <= 0)
+                            {
+                                commandBuffer.DestroyEntity(hitEntity);
+                            }
+                        }
                     }
                 }
+                
             }
         }
 

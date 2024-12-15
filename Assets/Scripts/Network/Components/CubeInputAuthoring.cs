@@ -2,6 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Network.Components
@@ -12,12 +13,11 @@ namespace Network.Components
         public int Vertical;
         public float MouseDeltaX; 
         public float MouseDeltaY;
-        public InputEvent IsFiring;
-        public int ShootingMode;
-        public InputEvent SwitchToMode1; // Event for switching to mode 1
-        public InputEvent SwitchToMode2; // Event for switching to mode 2
+        public InputEvent IsFiring; // Event for switching to mode 2
         public float FireRate;
         public InputEvent JumpEvent;
+        public InputEvent ShootingMode1;
+        public InputEvent ShootingMode2;
     }
    
 
@@ -60,9 +60,9 @@ public partial struct SampleCubeInput : ISystem
 
         bool isFiring = Input.GetMouseButton(0);
 
-        foreach (var (playerInput, transform) in SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>().WithAll<GhostOwnerIsLocal>())
+        foreach (var (playerInput, transform,shootMode) in SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>, RefRW<PlayerFireTimer>>().WithAll<GhostOwnerIsLocal>())
         {
-            var currentInput = playerInput.ValueRW;
+            var currentInput = default(CubeInput);
 
             // Update movement inputs
             currentInput.Horizontal = 0; // Reset to avoid stale input
@@ -92,11 +92,11 @@ public partial struct SampleCubeInput : ISystem
             // Trigger InputEvent for shooting mode switching
             if (isMode1Pressed)
             {
-                currentInput.SwitchToMode1.Set();
+                currentInput.ShootingMode1.Set();
             }
             else if (isMode2Pressed)
             {
-                currentInput.SwitchToMode2.Set();
+                currentInput.ShootingMode2.Set();
             }
 
             // Write updated input back to the component
