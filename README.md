@@ -38,6 +38,8 @@ Core Components
 Player Movement:
 
 Handled via WASD keys and mouse input.
+Switch between projectile/raycast shooting with 1 and 2 buttons.
+Jump with SPACE.
 Client sends input to the server for validation.
 Bullet Firing:
 
@@ -90,10 +92,7 @@ public partial struct BulletMovementSystem : ISystem
 }
 ```
 ## Future Improvements
-Add player health and respawn mechanics.
 Implement environmental obstacles.
-Add advanced collision layers for different entity types.
-Improve client-side prediction for smoother gameplay.
 
 ## Acknowledgments
 Thanks to the Unity ECS and NetCode teams for the great tools!
