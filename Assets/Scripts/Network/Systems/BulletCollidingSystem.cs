@@ -16,7 +16,6 @@ namespace Network.Systems
         protected override void OnCreate()
         {
             _endSimulationEcbSystem = World.GetOrCreateSystemManaged<EndSimulationEntityCommandBufferSystem>();
-            RequireForUpdate<PhysicsWorldSingleton>();
         }
 
         protected override void OnUpdate()

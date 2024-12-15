@@ -13,9 +13,10 @@ namespace Network.Components
         public float MouseDeltaX; 
         public float MouseDeltaY;
         public InputEvent IsFiring;
-        
+        public int ShootingMode;
+        public InputEvent SwitchToMode1; // Event for switching to mode 1
+        public InputEvent SwitchToMode2; // Event for switching to mode 2
         public float FireRate;
-        
         public InputEvent JumpEvent;
     }
    
@@ -34,64 +35,76 @@ namespace Network.Components
     }
 
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
-    public partial struct SampleCubeInput : ISystem
+public partial struct SampleCubeInput : ISystem
+{
+    public void OnCreate(ref SystemState state)
     {
-        public void OnCreate(ref SystemState state)
-        {
-            state.RequireForUpdate<GhostOwnerIsLocal>();
-        }
-
-        public void OnUpdate(ref SystemState state)
-        {
-            bool left = Input.GetKey(KeyCode.A);
-            bool right = Input.GetKey(KeyCode.D);
-            bool down = Input.GetKey(KeyCode.S);
-            bool up = Input.GetKey(KeyCode.W);
-            bool jumpPressed = Input.GetKeyDown(KeyCode.Space);
-
-            float mouseX = Input.GetAxis("Mouse X");
-            float mouseY = Input.GetAxis("Mouse Y");
-            float fireRate = 5f;
-
-            bool isFiring = Input.GetMouseButton(0);
-            Debug.Log(isFiring);
-            
-
-            using (var ecb = new EntityCommandBuffer(Allocator.Temp))
-            {
-                foreach (var (playerInput, transform, entity) in SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>().WithAll<GhostOwnerIsLocal>().WithEntityAccess())
-                {
-                    var currentInput = default(CubeInput);
-
-                    // Update movement and firing inputs
-                    if (left) currentInput.Horizontal -= 1;
-                    if (right) currentInput.Horizontal += 1;
-                    if (down) currentInput.Vertical -= 1;
-                    if (up) currentInput.Vertical += 1;
-
-                    currentInput.FireRate = fireRate;
-                    currentInput.MouseDeltaX = -mouseX;
-                    currentInput.MouseDeltaY = -mouseY;
-                    
-                    if (jumpPressed)
-                    {
-                        currentInput.JumpEvent.Set(); // Set jump event to true
-                    }
-
-                    if (isFiring)
-                    {
-                        currentInput.IsFiring.Set();
-                    }
-
-                    // Write the updated input back
-                    playerInput.ValueRW = currentInput;
-                    
-                }
-                ecb.Playback(state.EntityManager);
-            }
-        }
-
+        state.RequireForUpdate<GhostOwnerIsLocal>();
     }
+
+    public void OnUpdate(ref SystemState state)
+    {
+        // Input values
+        bool left = Input.GetKey(KeyCode.A);
+        bool right = Input.GetKey(KeyCode.D);
+        bool down = Input.GetKey(KeyCode.S);
+        bool up = Input.GetKey(KeyCode.W);
+        bool jumpPressed = Input.GetKeyDown(KeyCode.Space);
+
+        bool isMode1Pressed = Input.GetKeyDown("1");
+        bool isMode2Pressed = Input.GetKeyDown("2");
+
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+        float fireRate = 5f;
+
+        bool isFiring = Input.GetMouseButton(0);
+
+        foreach (var (playerInput, transform) in SystemAPI.Query<RefRW<CubeInput>, RefRO<LocalTransform>>().WithAll<GhostOwnerIsLocal>())
+        {
+            var currentInput = playerInput.ValueRW;
+
+            // Update movement inputs
+            currentInput.Horizontal = 0; // Reset to avoid stale input
+            currentInput.Vertical = 0;
+
+            if (left) currentInput.Horizontal -= 1;
+            if (right) currentInput.Horizontal += 1;
+            if (down) currentInput.Vertical -= 1;
+            if (up) currentInput.Vertical += 1;
+
+            // Update fire rate and mouse deltas
+            currentInput.FireRate = fireRate;
+            currentInput.MouseDeltaX = -mouseX;
+            currentInput.MouseDeltaY = -mouseY;
+
+            // Handle events
+            if (jumpPressed)
+            {
+                currentInput.JumpEvent.Set();
+            }
+
+            if (isFiring)
+            {
+                currentInput.IsFiring.Set();
+            }
+
+            // Trigger InputEvent for shooting mode switching
+            if (isMode1Pressed)
+            {
+                currentInput.SwitchToMode1.Set();
+            }
+            else if (isMode2Pressed)
+            {
+                currentInput.SwitchToMode2.Set();
+            }
+
+            // Write updated input back to the component
+            playerInput.ValueRW = currentInput;
+        }
+    }
+}
+
 
 
 }

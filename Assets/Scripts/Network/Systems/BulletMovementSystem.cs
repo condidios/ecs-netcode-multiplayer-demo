@@ -20,6 +20,7 @@ public partial struct BulletMovementSystem : ISystem
             // Move the bullet forward
             trans.ValueRW.Position += bullet.ValueRO.Direction * bullet.ValueRO.Speed * deltaTime;
 
+
             // Reduce the bullet's time left
             bullet.ValueRW.TimeLeft -= deltaTime;
 
